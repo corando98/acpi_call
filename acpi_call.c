@@ -6,7 +6,7 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <asm/uaccess.h>
-#include <acpi/acpi.h>
+#include <linux/acpi.h>
 
 MODULE_LICENSE("GPL");
 
@@ -316,12 +316,24 @@ static ssize_t acpi_proc_read( struct file *filp, char __user *buff,
 
     return ret;
 }
-
-static struct file_operations proc_acpi_operations = {
-        .owner    = THIS_MODULE,
-        .read     = acpi_proc_read,
-        .write    = acpi_proc_write,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+static const struct proc_ops proc_acpi_operations = {
+    .proc_read = acpi_proc_read,
+    .proc_write = acpi_proc_write,
 };
+#else
+static const struct file_operations proc_acpi_operations = {
+    .owner = THIS_MODULE,
+    .read = acpi_proc_read,
+    .write = acpi_proc_write,
+};
+#endif
+
+// static struct file_operations proc_acpi_operations = {
+//         .owner    = THIS_MODULE,
+//         .read     = acpi_proc_read,
+//         .write    = acpi_proc_write,
+// };
 
 #else
 static int acpi_proc_read(char *page, char **start, off_t off,
